@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Management System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 80%;
+            margin: auto;
+            overflow: hidden;
+        }
+        header {
+            background: #333;
+            color: #fff;
+            padding-top: 30px;
+            min-height: 70px;
+            border-bottom: #ff6f00 3px solid;
+        }
+        header a {
+            color: #fff;
+            text-decoration: none;
+            text-transform: uppercase;
+            font-size: 16px;
+        }
+        header ul {
+            padding: 0;
+            list-style: none;
+        }
+        header li {
+            float: left;
+            display: inline;
+            padding: 0 20px 0 20px;
+        }
+        header #branding {
+            float: left;
+        }
+        header #branding h1 {
+            margin: 0;
+        }
+        header nav {
+            float: right;
+            margin-top: 10px;
+        }
+        .content {
+            padding: 20px;
+            background: #fff;
+            margin-top: 30px;
+        }
+        .tab {
+            display: none;
+        }
+        .tab.active {
+            display: block;
+        }
+        .tab-buttons {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+        .tab-buttons button {
+            background: #333;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        .tab-buttons button:hover {
+            background: #ff6f00;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div id="branding">
+                <h1>School Management System</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#student-management">Student Management</a></li>
+                    <li><a href="#score-management">Score Management</a></li>
+                    <li><a href="#attendance">Attendance</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="tab-buttons">
+            <button onclick="showTab('student-management')">Student Management</button>
+            <button onclick="showTab('score-management')">Score Management</button>
+            <button onclick="showTab('attendance')">Attendance</button>
+        </div>
+
+        <div id="student-management" class="tab active">
+            <div class="content">
+                <h2>Student Management</h2>
+                <form id="studentForm">
+                    <label for="studentName">Name:</label>
+                    <input type="text" id="studentName" name="Name" required><br><br>
+                    <label for="studentId">Student ID:</label>
+                    <input type="text" id="studentId" name="StudentID" required><br><br>
+                    <label for="class">Class:</label>
+                    <input type="text" id="class" name="Class" required><br><br>
+                    <button type="submit">Add Student</button>
+                </form>
+                <button onclick="fetchData('Students')">Show Students</button>
+                <div id="studentList"></div>
+            </div>
+        </div>
+
+        <div id="score-management" class="tab">
+            <div class="content">
+                <h2>Score Management</h2>
+                <form id="scoreForm">
+                    <label for="studentIdScore">Student ID:</label>
+                    <input type="text" id="studentIdScore" name="StudentID" required><br><br>
+                    <label for="subject">Subject:</label>
+                    <input type="text" id="subject" name="Subject" required><br><br>
+                    <label for="score">Score:</label>
+                    <input type="number" id="score" name="Score" required><br><br>
+                    <button type="submit">Add Score</button>
+                </form>
+                <button onclick="fetchData('Scores')">Show Scores</button>
+                <div id="scoreList"></div>
+            </div>
+        </div>
+
+        <div id="attendance" class="tab">
+            <div class="content">
+                <h2>Attendance</h2>
+                <form id="attendanceForm">
+                    <label for="studentIdAttendance">Student ID:</label>
+                    <input type="text" id="studentIdAttendance" name="StudentID" required><br><br>
+                    <label for="date">Date:</label>
+                    <input type="date" id="date" name="Date" required><br><br>
+                    <label for="status">Status:</label>
+                    <select id="status" name="Status" required>
+                        <option value="Present">Present</option>
+                        <option value="Absent">Absent</option>
+                    </select><br><br>
+                    <button type="submit">Add Attendance</button>
+                </form>
+                <button onclick="fetchData('Attendance')">Show Attendance</button>
+                <div id="attendanceList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tabId) {
+            var tabs = document.getElementsByClassName('tab');
+            for (var i = 0; i < tabs.length; i++) {
+                tabs[i].classList.remove('active');
+            }
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        function fetchData(sheetName) {
+            fetch(`https://script.google.com/macros/s/AKfycbx1GVvxcyLBy-bCROZ3F8fZ2XpSKtYHBhM0eLQYacAxCTLhhWIpqayH5a1hCx1f7dQN/exec?sheetName=${sheetName}`)
+                .then(response => response.json())
+                .then(data => {
+                    let listContainer;
+                    if (sheetName === 'Students') {
+                        listContainer = document.getElementById('studentList');
+                    } else if (sheetName === 'Scores') {
+                        listContainer = document.getElementById('scoreList');
+                    } else if (sheetName === 'Attendance') {
+                        listContainer = document.getElementById('attendanceList');
+                    }
+                    let html = '<table><tr>';
+                    for (let key in data[0]) {
+                        html += `<th>${key}</th>`;
+                    }
+                    html += '</tr>';
+                    data.forEach(item => {
+                        html += '<tr>';
+                        for (let key in item) {
+                            html += `<td>${item[key]}</td>`;
+                        }
+                        html += '</tr>';
+                    });
+                    html += '</table>';
+                    listContainer.innerHTML = html;
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                });
+        }
+
+        document.getElementById('studentForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            var formData = new FormData(e.target);
+            formData.append('sheetName', 'Students');
+            fetch('https://script.google.com/macros/s/AKfycbx1GVvxcyLBy-bCROZ3F8fZ2XpSKtYHBhM0eLQYacAxCTLhhWIpqayH5a1hCx1f7dQN/exec', {
+                method: 'POST',
+                body: formData
+            }).then(response => response.json()).then(data => {
+                alert('Student added successfully');
+                e.target.reset();
+            }).catch(error => {
+                alert('Error adding student');
+                console.error(error);
+            });
+        });
+
+        document.getElementById('scoreForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            var formData = new FormData(e.target);
+            formData.append('sheetName', 'Scores');
+            fetch('https://script.google.com/macros/s/AKfycbx1GVvxcyLBy-bCROZ3F8fZ2XpSKtYHBhM0eLQYacAxCTLhhWIpqayH5a1hCx1f7dQN/exec', {
+                method: 'POST',
+                body: formData
+            }).then(response => response.json()).then(data => {
+                alert('Score added successfully');
+                e.target.reset();
+            }).catch(error => {
+                alert('Error adding score');
+                console.error(error);
+            });
+        });
+
+        document.getElementById('attendanceForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            var formData = new FormData(e.target);
+            formData.append('sheetName', 'Attendance');
+            fetch('https://script.google.com/macros/s/AKfycbx1GVvxcyLBy-bCROZ3F8fZ2XpSKtYHBhM0eLQYacAxCTLhhWIpqayH5a1hCx1f7dQN/exec', {
+                method: 'POST',
+                body: formData
+            }).then(response => response.json()).then(data => {
+                alert('Attendance added successfully');
+                e.target.reset();
+            }).catch(error => {
+                alert('Error adding attendance');
+                console.error(error);
+            });
+        });
+    </script>
+</body>
+</html>
